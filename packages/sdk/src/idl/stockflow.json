@@ -1,0 +1,1712 @@
+{
+  "address": "8BUAepdHuQKHXGav9VbNcenVzZPvUvfNqUzPHTE8cUXx",
+  "metadata": {
+    "name": "stockflow",
+    "version": "0.1.0",
+    "spec": "0.1.0",
+    "description": "StockFlow: programmable Financial Flows over tokenized stock portfolios on Solana"
+  },
+  "instructions": [
+    {
+      "name": "close_flow",
+      "discriminator": [
+        171,
+        38,
+        218,
+        73,
+        142,
+        135,
+        250,
+        180
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "flow"
+          ]
+        },
+        {
+          "name": "flow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  108,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "flow.owner",
+                "account": "Flow"
+              },
+              {
+                "kind": "account",
+                "path": "flow.flow_id",
+                "account": "Flow"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "close_protection_policy",
+      "discriminator": [
+        61,
+        229,
+        210,
+        172,
+        58,
+        86,
+        218,
+        150
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "protection_policy"
+          ]
+        },
+        {
+          "name": "protection_policy",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "protection_policy.owner",
+                "account": "ProtectionPolicy"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_flow",
+      "discriminator": [
+        139,
+        104,
+        255,
+        32,
+        61,
+        236,
+        41,
+        31
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "vault"
+          ]
+        },
+        {
+          "name": "vault",
+          "docs": [
+            "The owner's vault must exist before creating a Flow, because",
+            "execute_flow draws from the vault's token accounts."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "flow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  108,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "arg",
+                "path": "flow_id"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "flow_id",
+          "type": "u64"
+        },
+        {
+          "name": "name",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "trigger",
+          "type": {
+            "defined": {
+              "name": "Trigger"
+            }
+          }
+        },
+        {
+          "name": "action",
+          "type": {
+            "defined": {
+              "name": "Action"
+            }
+          }
+        },
+        {
+          "name": "source",
+          "type": {
+            "defined": {
+              "name": "Source"
+            }
+          }
+        },
+        {
+          "name": "constraints",
+          "type": {
+            "defined": {
+              "name": "Constraints"
+            }
+          }
+        },
+        {
+          "name": "destination",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "deposit",
+      "discriminator": [
+        242,
+        35,
+        198,
+        137,
+        82,
+        225,
+        242,
+        182
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "vault"
+          ]
+        },
+        {
+          "name": "vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "owner_token_account",
+          "docs": [
+            "Owner's source token account (authority must be the owner)."
+          ],
+          "writable": true
+        },
+        {
+          "name": "vault_token_account",
+          "docs": [
+            "Vault's token account for this mint. Created automatically if it",
+            "doesn't exist yet — one call handles all supported mints (USDC,",
+            "NVDAx, AAPLx, etc.)."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "vault_authority"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    },
+    {
+      "name": "execute_flow",
+      "discriminator": [
+        158,
+        53,
+        84,
+        19,
+        223,
+        99,
+        198,
+        183
+      ],
+      "accounts": [
+        {
+          "name": "caller",
+          "docs": [
+            "Owner or the automation worker's keeper keypair."
+          ],
+          "signer": true
+        },
+        {
+          "name": "vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "flow.owner",
+                "account": "Flow"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "flow.owner",
+                "account": "Flow"
+              }
+            ]
+          }
+        },
+        {
+          "name": "flow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  108,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "flow.owner",
+                "account": "Flow"
+              },
+              {
+                "kind": "account",
+                "path": "flow.flow_id",
+                "account": "Flow"
+              }
+            ]
+          }
+        },
+        {
+          "name": "protection_policy",
+          "docs": [
+            "Optional: present only when a Protection policy exists for this owner."
+          ],
+          "optional": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "flow.owner",
+                "account": "Flow"
+              }
+            ]
+          }
+        },
+        {
+          "name": "source_token_account",
+          "docs": [
+            "Source USDC token account held by the vault (authority = vault_authority)."
+          ],
+          "writable": true
+        },
+        {
+          "name": "destination_token_account",
+          "docs": [
+            "Destination token account for Pay actions."
+          ],
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "init_protection_policy",
+      "discriminator": [
+        64,
+        9,
+        160,
+        3,
+        52,
+        121,
+        215,
+        125
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "protection_policy",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "pause_threshold_bps",
+          "type": "u16"
+        },
+        {
+          "name": "resume_threshold_bps",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "initialize_vault",
+      "discriminator": [
+        48,
+        191,
+        163,
+        44,
+        71,
+        129,
+        63,
+        164
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "vault",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "keeper",
+          "type": "pubkey"
+        }
+      ]
+    },
+    {
+      "name": "pause_flow",
+      "discriminator": [
+        251,
+        119,
+        73,
+        98,
+        97,
+        70,
+        40,
+        149
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "flow"
+          ]
+        },
+        {
+          "name": "flow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  108,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "flow.owner",
+                "account": "Flow"
+              },
+              {
+                "kind": "account",
+                "path": "flow.flow_id",
+                "account": "Flow"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "refresh_protection_policy",
+      "discriminator": [
+        153,
+        239,
+        250,
+        252,
+        144,
+        44,
+        132,
+        159
+      ],
+      "accounts": [
+        {
+          "name": "protection_policy",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "protection_policy.owner",
+                "account": "ProtectionPolicy"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "resume_flow",
+      "discriminator": [
+        47,
+        142,
+        102,
+        63,
+        89,
+        52,
+        49,
+        36
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "flow"
+          ]
+        },
+        {
+          "name": "flow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  108,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "flow.owner",
+                "account": "Flow"
+              },
+              {
+                "kind": "account",
+                "path": "flow.flow_id",
+                "account": "Flow"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "update_flow",
+      "discriminator": [
+        30,
+        41,
+        120,
+        34,
+        195,
+        132,
+        228,
+        193
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "flow"
+          ]
+        },
+        {
+          "name": "flow",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  102,
+                  108,
+                  111,
+                  119
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "flow.owner",
+                "account": "Flow"
+              },
+              {
+                "kind": "account",
+                "path": "flow.flow_id",
+                "account": "Flow"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "name",
+          "type": {
+            "option": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          }
+        },
+        {
+          "name": "trigger",
+          "type": {
+            "option": {
+              "defined": {
+                "name": "Trigger"
+              }
+            }
+          }
+        },
+        {
+          "name": "action",
+          "type": {
+            "option": {
+              "defined": {
+                "name": "Action"
+              }
+            }
+          }
+        },
+        {
+          "name": "source",
+          "type": {
+            "option": {
+              "defined": {
+                "name": "Source"
+              }
+            }
+          }
+        },
+        {
+          "name": "constraints",
+          "type": {
+            "option": {
+              "defined": {
+                "name": "Constraints"
+              }
+            }
+          }
+        },
+        {
+          "name": "destination",
+          "type": {
+            "option": "pubkey"
+          }
+        }
+      ]
+    },
+    {
+      "name": "update_protection_policy",
+      "discriminator": [
+        83,
+        227,
+        16,
+        175,
+        42,
+        245,
+        98,
+        53
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "protection_policy"
+          ]
+        },
+        {
+          "name": "protection_policy",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  114,
+                  111,
+                  116,
+                  101,
+                  99,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "protection_policy.owner",
+                "account": "ProtectionPolicy"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "pause_threshold_bps",
+          "type": "u16"
+        },
+        {
+          "name": "resume_threshold_bps",
+          "type": "u16"
+        }
+      ]
+    },
+    {
+      "name": "withdraw",
+      "discriminator": [
+        183,
+        18,
+        70,
+        156,
+        148,
+        109,
+        161,
+        34
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "vault"
+          ]
+        },
+        {
+          "name": "vault",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  118,
+                  97,
+                  117,
+                  108,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              }
+            ]
+          }
+        },
+        {
+          "name": "vault_token_account",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "vault_authority"
+              },
+              {
+                "kind": "const",
+                "value": [
+                  6,
+                  221,
+                  246,
+                  225,
+                  215,
+                  101,
+                  161,
+                  147,
+                  217,
+                  203,
+                  225,
+                  70,
+                  206,
+                  235,
+                  121,
+                  172,
+                  28,
+                  180,
+                  133,
+                  237,
+                  95,
+                  91,
+                  55,
+                  145,
+                  58,
+                  140,
+                  245,
+                  133,
+                  126,
+                  255,
+                  0,
+                  169
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "owner_token_account",
+          "writable": true
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "amount",
+          "type": "u64"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Flow",
+      "discriminator": [
+        126,
+        151,
+        86,
+        177,
+        58,
+        153,
+        167,
+        203
+      ]
+    },
+    {
+      "name": "ProtectionPolicy",
+      "discriminator": [
+        162,
+        197,
+        49,
+        149,
+        67,
+        19,
+        145,
+        78
+      ]
+    },
+    {
+      "name": "Vault",
+      "discriminator": [
+        211,
+        8,
+        232,
+        43,
+        2,
+        152,
+        117,
+        119
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "LtvLimitExceeded",
+      "msg": "Requested LTV exceeds the Flow's configured maximum LTV."
+    },
+    {
+      "code": 6001,
+      "name": "ProtocolLtvCeilingExceeded",
+      "msg": "Requested LTV exceeds the protocol-wide hard LTV ceiling."
+    },
+    {
+      "code": 6002,
+      "name": "AmountLimitExceeded",
+      "msg": "Requested amount exceeds the Flow's configured max amount."
+    },
+    {
+      "code": 6003,
+      "name": "UnauthorizedRecipient",
+      "msg": "Destination does not match the Flow's allowed recipient."
+    },
+    {
+      "code": 6004,
+      "name": "FlowPaused",
+      "msg": "This Flow is paused and cannot be executed."
+    },
+    {
+      "code": 6005,
+      "name": "TriggerConditionsNotMet",
+      "msg": "Trigger conditions for this Flow have not been met yet."
+    },
+    {
+      "code": 6006,
+      "name": "ExecutionTooSoon",
+      "msg": "Minimum execution interval has not elapsed since the last run."
+    },
+    {
+      "code": 6007,
+      "name": "ProtectionActive",
+      "msg": "Portfolio protection policy has paused discretionary spending."
+    },
+    {
+      "code": 6008,
+      "name": "MathOverflow",
+      "msg": "Numeric overflow while evaluating Flow constraints."
+    },
+    {
+      "code": 6009,
+      "name": "NoCollateralForBorrow",
+      "msg": "Cannot borrow against zero collateral value."
+    },
+    {
+      "code": 6010,
+      "name": "Unauthorized",
+      "msg": "Only the Flow owner may perform this action."
+    },
+    {
+      "code": 6011,
+      "name": "UnsupportedSource",
+      "msg": "Unsupported source configuration for this action."
+    },
+    {
+      "code": 6012,
+      "name": "FlowMustBePausedToClose",
+      "msg": "Flow must be paused before it can be closed."
+    },
+    {
+      "code": 6013,
+      "name": "InvalidProtectionThresholds",
+      "msg": "Resume threshold must be strictly less than the pause threshold."
+    }
+  ],
+  "types": [
+    {
+      "name": "Action",
+      "docs": [
+        "WHAT the Flow does when triggered."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Pay",
+            "fields": [
+              {
+                "name": "amount",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "Borrow",
+            "fields": [
+              {
+                "name": "amount",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "Repay",
+            "fields": [
+              {
+                "name": "amount",
+                "type": "u64"
+              }
+            ]
+          },
+          {
+            "name": "PauseSpending"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Constraints",
+      "docs": [
+        "Guardrails the on-chain program enforces regardless of what the",
+        "off-chain automation worker submits. This is what makes automation",
+        "safe per PRD Goal 4.",
+        "",
+        "`destination` (stored on the Flow itself) is always enforced for Pay",
+        "actions — there is no separate \"locked recipient\" field here, which",
+        "previously meant the check only ran when a caller also set that field."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "max_amount",
+            "docs": [
+              "Hard ceiling on any single execution's amount (source-token smallest unit)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "max_ltv_bps",
+            "docs": [
+              "Hard ceiling on portfolio LTV (bps) after this Flow executes."
+            ],
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Flow",
+      "docs": [
+        "A Financial Flow: Trigger -> Action -> Source -> Constraints -> Destination.",
+        "This is the single on-chain object the PRD calls \"the core primitive.\""
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "docs": [
+              "Wallet that owns this Flow and the underlying vault."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "flow_id",
+            "docs": [
+              "Monotonically increasing per-owner nonce used in the PDA seeds so",
+              "one owner can have many Flows."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "name",
+            "docs": [
+              "UTF-8 display name, right-padded with zeros (max 32 bytes).",
+              "Shown in the Flows dashboard: \"Developer Payment\", \"Portfolio Protection\"."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "next_execution",
+            "docs": [
+              "Unix timestamp of the next scheduled execution. Set on create and",
+              "after each successful execution. 0 = OnDemand / no schedule."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "execution_count",
+            "docs": [
+              "Total number of successful executions since creation.",
+              "Drives the activity-feed execution count shown in the UI."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "trigger",
+            "type": {
+              "defined": {
+                "name": "Trigger"
+              }
+            }
+          },
+          {
+            "name": "action",
+            "type": {
+              "defined": {
+                "name": "Action"
+              }
+            }
+          },
+          {
+            "name": "source",
+            "type": {
+              "defined": {
+                "name": "Source"
+              }
+            }
+          },
+          {
+            "name": "constraints",
+            "type": {
+              "defined": {
+                "name": "Constraints"
+              }
+            }
+          },
+          {
+            "name": "destination",
+            "docs": [
+              "Recipient wallet for Pay actions.",
+              "Ignored for Borrow / Repay / PauseSpending."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "status",
+            "type": {
+              "defined": {
+                "name": "FlowStatus"
+              }
+            }
+          },
+          {
+            "name": "last_executed_at",
+            "type": "i64"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "FlowStatus",
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "Active"
+          },
+          {
+            "name": "Paused"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProtectionPolicy",
+      "docs": [
+        "One per owner. Independent of individual Flows — this is the",
+        "account the \"Portfolio Intelligence & Protection\" pillar reads",
+        "and writes. When `spending_paused` is true, `execute_flow` refuses",
+        "to run any Action::Pay or Action::Borrow across ALL of the owner's",
+        "Flows until protection is cleared or a Repay brings LTV back down."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "pause_threshold_bps",
+            "docs": [
+              "LTV (bps) at which discretionary spending is auto-paused."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "resume_threshold_bps",
+            "docs": [
+              "LTV (bps) at which spending is auto re-enabled after having",
+              "been paused (hysteresis, so it doesn't flap at the boundary)."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "spending_paused",
+            "type": "bool"
+          },
+          {
+            "name": "updated_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Source",
+      "docs": [
+        "WHERE the funds for a Pay action come from, in priority order."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "StablecoinOnly"
+          },
+          {
+            "name": "StablecoinThenBorrow",
+            "fields": [
+              {
+                "name": "collateral_mint",
+                "type": "pubkey"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Trigger",
+      "docs": [
+        "WHEN a Flow is allowed to run."
+      ],
+      "type": {
+        "kind": "enum",
+        "variants": [
+          {
+            "name": "TimeInterval",
+            "fields": [
+              {
+                "name": "interval_seconds",
+                "type": "i64"
+              }
+            ]
+          },
+          {
+            "name": "OnDemand"
+          },
+          {
+            "name": "RiskThreshold",
+            "fields": [
+              {
+                "name": "ltv_bps",
+                "type": "u16"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vault",
+      "docs": [
+        "Policy Vault — a PDA-controlled token custodian, one per owner.",
+        "",
+        "Holds the owner's tokenized stocks and USDC so the program can sign",
+        "token transfers on their behalf via the `vault_authority` PDA. This",
+        "is the \"smart-contract-controlled account\" the PRD (§8.5) describes:",
+        "",
+        "\"A Policy Vault prevents the automation layer from having",
+        "unrestricted custody.\"",
+        "",
+        "User flow: initialize_vault → deposit → create_flow → execute_flow."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "vault_authority",
+            "docs": [
+              "PDA that is set as the SPL token authority for all vault token",
+              "accounts. Seeds: [VAULT_AUTHORITY_SEED, owner]. The program uses",
+              "this PDA to sign transfers in execute_flow so the automation",
+              "worker never holds direct authority over user assets."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "vault_authority_bump",
+            "type": "u8"
+          },
+          {
+            "name": "keeper",
+            "docs": [
+              "Pubkey of the registered automation keeper (e.g. the off-chain",
+              "worker's keypair, or a Tuk Tuk task signer). Stored here so",
+              "execute_flow can verify: caller == owner OR caller == keeper.",
+              "The owner can update this via update_vault_keeper."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}
