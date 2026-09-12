@@ -5,8 +5,13 @@ import { ArrowLeft, Save, ArrowRight, Settings2, Sparkles, Activity } from 'luci
 import Link from 'next/link';
 import { TopNav } from '@/components/TopNav';
 import { Footer } from '@/components/Footer';
+import { createFlow } from '@stockflow/sdk';
+import type { FlowSpec, Action, Trigger } from '@stockflow/sdk';
+import { useStockFlow } from '@/hooks/useStockFlow';
 
 export default function FlowCreatorPage() {
+  const { client, owner, isConnected } = useStockFlow();
+
   const [condition, setCondition] = useState({
     asset: 'xNVDA',
     operator: 'GREATER_THAN',
@@ -19,10 +24,50 @@ export default function FlowCreatorPage() {
     secondaryAction: 'REPAY_USDC'
   });
 
-  const handleSave = (e: React.FormEvent) => {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Flow saved:", { condition, action });
-    // Final on-chain submission logic goes here
+    if (!client || !owner) return;
+    
+    setBusy(true);
+    setError(null);
+    setSuccess(false);
+
+    try {
+      const amountUnits = BigInt(Math.round(Number(action.amount) * 1_000_000));
+      
+      let mappedAction: Action;
+      if (action.secondaryAction === 'REPAY_USDC' || action.type === 'SELL') {
+        mappedAction = { kind: "Repay", amount: amountUnits };
+      } else if (action.type === 'BUY') {
+        mappedAction = { kind: "Borrow", amount: amountUnits };
+      } else {
+        mappedAction = { kind: "Pay", amount: amountUnits };
+      }
+
+      const spec: FlowSpec = {
+        flowId: BigInt(Date.now()),
+        owner,
+        trigger: { kind: "RiskThreshold", ltvBps: Number(condition.threshold) * 100 },
+        action: mappedAction,
+        source: { kind: "StablecoinOnly" },
+        constraints: {
+          maxAmount: amountUnits,
+          maxLtvBps: 4000,
+        },
+        destination: owner,
+      };
+
+      await createFlow(client, spec);
+      setSuccess(true);
+    } catch (err: any) {
+      setError(err.message || String(err));
+    } finally {
+      setBusy(false);
+    }
   };
 
   return (
@@ -46,6 +91,24 @@ export default function FlowCreatorPage() {
               </div>
             </div>
           </div>
+
+          {!isConnected && (
+            <p className="font-mono text-sm text-muted">
+              Connect your wallet to create a flow.
+            </p>
+          )}
+
+          {error && (
+            <div className="rounded-md border border-alert bg-panel px-4 py-3">
+              <p className="font-mono text-xs text-alert">{error}</p>
+            </div>
+          )}
+
+          {success && (
+            <div className="rounded-md border border-signal bg-panel px-4 py-3">
+              <p className="font-mono text-xs text-signal">Flow created successfully.</p>
+            </div>
+          )}
 
           <form onSubmit={handleSave} className="space-y-6">
             {/* Condition Section */}
@@ -158,10 +221,11 @@ export default function FlowCreatorPage() {
               
               <button 
                 type="submit"
-                className="flex items-center space-x-2 bg-white text-ink px-8 py-4 rounded-xl font-mono text-sm font-semibold hover:bg-white/90 transition-colors shrink-0"
+                disabled={!isConnected || busy}
+                className="flex items-center space-x-2 bg-white text-ink px-8 py-4 rounded-xl font-mono text-sm font-semibold hover:bg-white/90 transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 <Save className="w-4 h-4" />
-                <span>Create Flow</span>
+                <span>{busy ? "Submitting..." : "Create Flow"}</span>
               </button>
             </div>
           </form>
