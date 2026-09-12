@@ -11,7 +11,7 @@ const WalletMultiButton = dynamic(
 );
 
 const LINKS = [
-  { href: "/", label: "Portfolio" },
+  { href: "/dashboard", label: "Dashboard" },
   { href: "/flows", label: "Flows" },
   { href: "/pay", label: "Pay" },
   { href: "/borrow", label: "Borrow" },
@@ -20,8 +20,8 @@ const LINKS = [
 
 export function TopNav() {
   return (
-    <header className="border-b border-line">
-      <div className="mx-auto flex max-w-3xl items-center justify-between px-6 py-4">
+    <header className="sticky top-0 z-50 w-full border-b border-line bg-ink/80 backdrop-blur-md">
+      <div className="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
         <span className="font-mono text-sm tracking-tight text-paper">stockflow</span>
         <nav className="flex items-center gap-6 font-mono text-sm text-muted">
           {LINKS.map((link) => (
