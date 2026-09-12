@@ -7,6 +7,9 @@ import type { FlowSpec, Source } from "@stockflow/sdk";
 import { CONFIG } from "@stockflow/sdk";
 import { useStockFlow } from "@/hooks/useStockFlow";
 
+import { TopNav } from "@/components/TopNav";
+import { Footer } from "@/components/Footer";
+
 // The devnet NVDAx mint is unconfirmed — placeholder used until
 // KNOWN_DEVNET_XSTOCK_MINTS is populated (Phase 1 of the plan).
 // The form still lets the user choose the fallback option; we surface
@@ -86,75 +89,86 @@ export default function PayPage() {
   }
 
   return (
-    <div className="max-w-md space-y-6">
-      <h1 className="font-display text-3xl text-paper">Pay</h1>
+    <main>
+      <TopNav />
+      <div className="max-w-4xl mx-auto px-6 py-12 min-h-screen flex items-center justify-center">
+        <div className="w-full max-w-md space-y-6">
+          <h1 className="font-display text-3xl text-paper mb-6 text-center">StockPay</h1>
 
-      {!isConnected && (
-        <p className="font-mono text-sm text-muted">
-          Connect your wallet to make a payment.
-        </p>
-      )}
-
-      {error && (
-        <div className="rounded-md border border-alert bg-panel px-4 py-3">
-          <p className="font-mono text-xs text-alert">{error}</p>
-        </div>
-      )}
-
-      {success && (
-        <div className="rounded-md border border-signal bg-panel px-4 py-3">
-          <p className="font-mono text-xs text-signal">Payment submitted.</p>
-        </div>
-      )}
-
-      <section className="space-y-4 rounded-md border border-line bg-panel p-5">
-        <label className="space-y-1 block">
-          <span className="block font-mono text-xs text-muted">To</span>
-          <input
-            className="field-input"
-            placeholder="7xK...92P"
-            value={recipient}
-            onChange={(e) => setRecipient(e.target.value)}
-          />
-          {recipientError && (
-            <p className="font-mono text-xs text-alert mt-1">{recipientError}</p>
+          {!isConnected && (
+            <p className="font-mono text-sm text-muted text-center">
+              Connect your wallet to make a payment.
+            </p>
           )}
-        </label>
 
-        <label className="space-y-1 block">
-          <span className="block font-mono text-xs text-muted">Amount (USDC)</span>
-          <input
-            className="field-input"
-            type="number"
-            min="0"
-            placeholder="500"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-        </label>
+          {error && (
+            <div className="rounded-md border border-alert bg-panel px-4 py-3">
+              <p className="font-mono text-xs text-alert">{error}</p>
+            </div>
+          )}
 
-        <label className="space-y-1 block">
-          <span className="block font-mono text-xs text-muted">Funding</span>
-          <select
-            className="field-input"
-            value={fundingMode}
-            onChange={(e) => setFundingMode(e.target.value as typeof fundingMode)}
-          >
-            <option value="usdc">USDC balance only</option>
-            <option value="borrow-nvda">
-              USDC, then borrow against NVDAx if needed
-            </option>
-          </select>
-        </label>
+          {success && (
+            <div className="rounded-md border border-signal bg-panel px-4 py-3">
+              <p className="font-mono text-xs text-signal">Payment submitted.</p>
+            </div>
+          )}
 
-        <button
-          onClick={handlePay}
-          disabled={!isConnected || busy || !!recipientError}
-          className="btn w-full border-signal text-signal hover:bg-signal hover:text-ink"
-        >
-          {busy ? "Submitting…" : "Pay"}
-        </button>
-      </section>
-    </div>
+          <section className="space-y-6 rounded-xl border border-line bg-panel p-8 shadow-sm">
+            <label className="space-y-2 block">
+              <span className="block font-mono text-xs text-muted uppercase tracking-wider">Recipient Address</span>
+              <input
+                className="w-full bg-ink border border-line rounded-lg px-4 py-2.5 text-paper focus:outline-none focus:border-signal font-mono text-sm"
+                placeholder="7xK...92P"
+                value={recipient}
+                onChange={(e) => setRecipient(e.target.value)}
+              />
+              {recipientError && (
+                <p className="font-mono text-xs text-alert mt-1">{recipientError}</p>
+              )}
+            </label>
+
+            <label className="space-y-2 block">
+              <span className="block font-mono text-xs text-muted uppercase tracking-wider">Amount (USDC)</span>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-muted font-mono">$</span>
+                </div>
+                <input
+                  className="w-full bg-ink border border-line rounded-lg pl-8 pr-4 py-2.5 text-paper focus:outline-none focus:border-signal font-mono"
+                  type="number"
+                  min="0"
+                  placeholder="500.00"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+              </div>
+            </label>
+
+            <label className="space-y-2 block">
+              <span className="block font-mono text-xs text-muted uppercase tracking-wider">Funding Source</span>
+              <select
+                className="w-full bg-ink border border-line rounded-lg px-4 py-2.5 text-paper focus:outline-none focus:border-signal appearance-none text-sm"
+                value={fundingMode}
+                onChange={(e) => setFundingMode(e.target.value as typeof fundingMode)}
+              >
+                <option value="usdc">USDC Balance Only</option>
+                <option value="borrow-nvda">
+                  USDC, then Borrow vs NVDAx
+                </option>
+              </select>
+            </label>
+
+            <button
+              onClick={handlePay}
+              disabled={!isConnected || busy || !!recipientError}
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-paper text-ink px-5 py-3 font-mono text-sm font-semibold hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+            >
+              {busy ? "Submitting…" : "Confirm Payment"}
+            </button>
+          </section>
+        </div>
+      </div>
+      <Footer />
+    </main>
   );
 }

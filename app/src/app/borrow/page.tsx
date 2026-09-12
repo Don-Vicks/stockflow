@@ -5,6 +5,9 @@ import { getPortfolio, createFlow } from "@stockflow/sdk";
 import type { PortfolioSummary, FlowSpec } from "@stockflow/sdk";
 import { useStockFlow } from "@/hooks/useStockFlow";
 
+import { TopNav } from "@/components/TopNav";
+import { Footer } from "@/components/Footer";
+
 export default function BorrowPage() {
   const { client, owner, isConnected } = useStockFlow();
   const [portfolio, setPortfolio] = useState<PortfolioSummary | null>(null);
@@ -66,79 +69,90 @@ export default function BorrowPage() {
   }
 
   return (
-    <div className="max-w-md space-y-6">
-      <h1 className="font-display text-3xl text-paper">Borrow</h1>
+    <main>
+      <TopNav />
+      <div className="max-w-4xl mx-auto px-6 py-12 min-h-screen flex items-center justify-center">
+        <div className="w-full max-w-md space-y-6">
+          <h1 className="font-display text-3xl text-paper mb-6 text-center">Borrow USDC</h1>
 
-      {!isConnected && (
-        <p className="font-mono text-sm text-muted">
-          Connect your wallet to borrow.
-        </p>
-      )}
+          {!isConnected && (
+            <p className="font-mono text-sm text-muted text-center">
+              Connect your wallet to borrow.
+            </p>
+          )}
 
-      {error && (
-        <div className="rounded-md border border-alert bg-panel px-4 py-3">
-          <p className="font-mono text-xs text-alert">{error}</p>
+          {error && (
+            <div className="rounded-md border border-alert bg-panel px-4 py-3">
+              <p className="font-mono text-xs text-alert">{error}</p>
+            </div>
+          )}
+
+          {success && (
+            <div className="rounded-md border border-signal bg-panel px-4 py-3">
+              <p className="font-mono text-xs text-signal">Borrow submitted.</p>
+            </div>
+          )}
+
+          {/* Portfolio context */}
+          <section className="rounded-xl border border-line bg-panel p-6 shadow-sm mb-6">
+            <div className="flex justify-between items-center py-2 border-b border-line">
+              <span className="font-mono text-sm text-muted">Portfolio Value</span>
+              <span className="font-mono text-sm text-paper font-semibold">
+                {portfolio
+                  ? `$${portfolio.totalValueUsd.toLocaleString()}`
+                  : "—"}
+              </span>
+            </div>
+            <div className="flex justify-between items-center py-2 pt-4">
+              <span className="font-mono text-sm text-muted">Available Liquidity</span>
+              <span className="font-mono text-sm text-signal font-semibold">
+                {portfolio
+                  ? `$${portfolio.availableLiquidityUsd.toLocaleString()}`
+                  : "—"}
+              </span>
+            </div>
+          </section>
+
+          {/* Borrow form */}
+          <section className="space-y-6 rounded-xl border border-line bg-panel p-8 shadow-sm">
+            <label className="space-y-2 block">
+              <span className="block font-mono text-xs text-muted uppercase tracking-wider">
+                Amount to Borrow (USDC)
+              </span>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <span className="text-muted font-mono">$</span>
+                </div>
+                <input
+                  className="w-full bg-ink border border-line rounded-lg pl-8 pr-4 py-2.5 text-paper focus:outline-none focus:border-signal font-mono"
+                  type="number"
+                  min="0"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                />
+              </div>
+            </label>
+
+            <div className="flex justify-between items-center py-2">
+              <span className="font-mono text-sm text-muted">LTV after borrow</span>
+              <span
+                className={`font-mono text-sm font-semibold ${ltvSafe ? "text-paper" : "text-alert"}`}
+              >
+                {ltvAfter.toFixed(1)}%{!ltvSafe && " (Exceeds Limit)"}
+              </span>
+            </div>
+
+            <button
+              onClick={handleBorrow}
+              disabled={!isConnected || busy || !ltvSafe || amountNum <= 0}
+              className="w-full flex items-center justify-center gap-2 rounded-lg bg-paper text-ink px-5 py-3 font-mono text-sm font-semibold hover:bg-white transition-colors disabled:opacity-50 disabled:cursor-not-allowed mt-4"
+            >
+              {busy ? "Submitting…" : `Borrow $${amount || 0} USDC`}
+            </button>
+          </section>
         </div>
-      )}
-
-      {success && (
-        <div className="rounded-md border border-signal bg-panel px-4 py-3">
-          <p className="font-mono text-xs text-signal">Borrow submitted.</p>
-        </div>
-      )}
-
-      {/* Portfolio context */}
-      <section className="rounded-md border border-line bg-panel px-5">
-        <div className="ledger-row">
-          <span className="font-mono text-sm text-muted">Portfolio value</span>
-          <span className="font-mono text-sm text-paper">
-            {portfolio
-              ? `$${portfolio.totalValueUsd.toLocaleString()}`
-              : "—"}
-          </span>
-        </div>
-        <div className="ledger-row">
-          <span className="font-mono text-sm text-muted">Available liquidity</span>
-          <span className="font-mono text-sm text-signal">
-            {portfolio
-              ? `$${portfolio.availableLiquidityUsd.toLocaleString()}`
-              : "—"}
-          </span>
-        </div>
-      </section>
-
-      {/* Borrow form */}
-      <section className="space-y-4 rounded-md border border-line bg-panel p-5">
-        <label className="space-y-1 block">
-          <span className="block font-mono text-xs text-muted">
-            Amount to borrow (USDC)
-          </span>
-          <input
-            className="field-input"
-            type="number"
-            min="0"
-            value={amount}
-            onChange={(e) => setAmount(e.target.value)}
-          />
-        </label>
-
-        <div className="ledger-row">
-          <span className="font-mono text-sm text-muted">LTV after borrow</span>
-          <span
-            className={`font-mono text-sm ${ltvSafe ? "text-paper" : "text-alert"}`}
-          >
-            {ltvAfter.toFixed(1)}%{!ltvSafe && " — exceeds 40% limit"}
-          </span>
-        </div>
-
-        <button
-          onClick={handleBorrow}
-          disabled={!isConnected || busy || !ltvSafe || amountNum <= 0}
-          className="btn w-full border-signal text-signal hover:bg-signal hover:text-ink"
-        >
-          {busy ? "Submitting…" : `Borrow $${amount || 0} USDC`}
-        </button>
-      </section>
-    </div>
+      </div>
+      <Footer />
+    </main>
   );
 }

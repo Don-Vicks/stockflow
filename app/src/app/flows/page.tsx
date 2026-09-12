@@ -5,6 +5,9 @@ import Link from "next/link";
 import { useStockFlow } from "@/hooks/useStockFlow";
 import { CONFIG } from "@stockflow/sdk";
 
+import { TopNav } from "@/components/TopNav";
+import { Footer } from "@/components/Footer";
+
 // Flow::SIZE constant mirrors the Rust program's account size so we can
 // filter accounts by data length — discriminator(8) + owner(32) + flow_id(8)
 // + Trigger(17) + Action(9) + Source(33) + Constraints(10) + destination(32)
@@ -59,71 +62,77 @@ export default function FlowsPage() {
   }, [client, owner]);
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <h1 className="font-display text-3xl text-paper">My Flows</h1>
-        <Link href="/flows/new" className="btn">
-          + Create Flow
-        </Link>
-      </div>
-
-      {!isConnected && (
-        <p className="font-mono text-sm text-muted">
-          Connect your wallet to view your Flows.
-        </p>
-      )}
-
-      {isConnected && error && (
-        <div className="rounded-md border border-alert bg-panel px-4 py-3">
-          <p className="font-mono text-xs text-alert">{error}</p>
-        </div>
-      )}
-
-      {isConnected && loading && (
-        <p className="font-mono text-sm text-muted animate-pulse">Loading…</p>
-      )}
-
-      {isConnected && !loading && !error && flows.length === 0 && (
-        <div className="rounded-md border border-line bg-panel p-10 text-center space-y-3">
-          <p className="font-mono text-sm text-muted">No Flows yet.</p>
-          <Link
-            href="/flows/new"
-            className="font-mono text-sm text-signal hover:underline inline-block"
-          >
-            Create your first Flow →
-          </Link>
-        </div>
-      )}
-
-      {flows.length > 0 && (
-        <div className="divide-y divide-line rounded-md border border-line bg-panel">
-          {flows.map((flow) => (
-            <Link
-              key={flow.address}
-              href={`/flows/${flow.address}`}
-              className="flex items-center justify-between px-5 py-4 hover:bg-panel/80 transition-colors"
-            >
-              <div>
-                {/* Address displayed until IDL deserialization gives us a
-                    human-readable name / trigger description (Phase 3). */}
-                <p className="font-mono text-sm text-paper">
-                  {flow.address.slice(0, 8)}…{flow.address.slice(-8)}
-                </p>
-                <p className="font-mono text-xs text-muted">
-                  {flow.address}
-                </p>
-              </div>
-              <span
-                className={`font-mono text-xs ${
-                  flow.active ? "text-signal" : "text-muted"
-                }`}
-              >
-                ● {flow.active ? "ACTIVE" : "PAUSED"}
-              </span>
+    <main>
+      <TopNav />
+      <div className="max-w-4xl mx-auto px-6 py-12 min-h-screen">
+        <div className="space-y-6">
+          <div className="flex items-center justify-between">
+            <h1 className="font-display text-3xl text-paper">My Flows</h1>
+            <Link href="/flows/new" className="flex items-center gap-2 rounded-lg bg-paper text-ink px-5 py-2.5 font-mono text-sm font-semibold hover:bg-white transition-colors">
+              + Create Flow
             </Link>
-          ))}
+          </div>
+
+          {!isConnected && (
+            <p className="font-mono text-sm text-muted">
+              Connect your wallet to view your Flows.
+            </p>
+          )}
+
+          {isConnected && error && (
+            <div className="rounded-md border border-alert bg-panel px-4 py-3">
+              <p className="font-mono text-xs text-alert">{error}</p>
+            </div>
+          )}
+
+          {isConnected && loading && (
+            <p className="font-mono text-sm text-muted animate-pulse">Loading…</p>
+          )}
+
+          {isConnected && !loading && !error && flows.length === 0 && (
+            <div className="rounded-md border border-dashed border-line bg-panel p-16 text-center space-y-3 mt-12">
+              <p className="font-mono text-sm text-muted">No Flows yet.</p>
+              <Link
+                href="/flows/new"
+                className="font-mono text-sm text-signal hover:underline inline-block"
+              >
+                Create your first Flow →
+              </Link>
+            </div>
+          )}
+
+          {flows.length > 0 && (
+            <div className="divide-y divide-line rounded-md border border-line bg-panel">
+              {flows.map((flow) => (
+                <Link
+                  key={flow.address}
+                  href={`/flows/${flow.address}`}
+                  className="flex items-center justify-between px-5 py-4 hover:bg-panel/80 transition-colors"
+                >
+                  <div>
+                    {/* Address displayed until IDL deserialization gives us a
+                        human-readable name / trigger description (Phase 3). */}
+                    <p className="font-mono text-sm text-paper">
+                      {flow.address.slice(0, 8)}…{flow.address.slice(-8)}
+                    </p>
+                    <p className="font-mono text-xs text-muted">
+                      {flow.address}
+                    </p>
+                  </div>
+                  <span
+                    className={`font-mono text-xs ${
+                      flow.active ? "text-signal" : "text-muted"
+                    }`}
+                  >
+                    ● {flow.active ? "ACTIVE" : "PAUSED"}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
         </div>
-      )}
-    </div>
+      </div>
+      <Footer />
+    </main>
   );
 }
