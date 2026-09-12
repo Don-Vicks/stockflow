@@ -1,0 +1,35 @@
+[package]
+name = "stockflow"
+version = "0.1.0"
+description = "StockFlow: programmable Financial Flows over tokenized stock portfolios on Solana"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib", "lib"]
+name = "stockflow"
+
+[features]
+no-entrypoint = []
+no-idl = []
+no-log-ix-name = []
+cpi = ["no-entrypoint"]
+idl-build = ["anchor-lang/idl-build", "anchor-spl/idl-build"]
+default = []
+
+[dependencies]
+# Anchor hit a stable 1.0 in April 2026 (anchor-lang/anchor-spl versions
+# are now synced with the anchor-cli version, e.g. 1.2.0). This is a
+# major-version jump from the 0.3x line most existing tutorials still
+# reference — see docs/FEASIBILITY.md for what changed and what it
+# means for `anchor test`.
+anchor-lang = { version = "1.2.0", features = ["init-if-needed"] }
+anchor-spl = "1.2.0"
+
+# CPI into Kamino Lend (klend) for StockFi borrow/repay/deposit.
+# Not published on crates.io — must stay a git dependency. Pin to a
+# specific rev (not a floating branch) once you've confirmed which
+# commit matches the devnet market you're testing against; the klend
+# repo has moved substantially since this scaffold was written (their
+# TS SDK jumped to v12 and migrated to @solana/kit — see
+# docs/FEASIBILITY.md — so assume the Rust CPI surface has moved too).
+# kamino-lending = { git = "https://github.com/Kamino-Finance/klend.git", rev = "<confirm-and-pin-a-commit>", features = ["cpi"] }
