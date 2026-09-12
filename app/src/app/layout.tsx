@@ -6,8 +6,8 @@ import type { Metadata } from "next";
 // this scaffold (see docs/FEASIBILITY.md).
 import { Newsreader, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import "@solana/wallet-adapter-react-ui/styles.css";
 import { WalletContextProvider } from "@/components/WalletContextProvider";
-import { TopNav } from "@/components/TopNav";
 
 const display = Newsreader({
   subsets: ["latin"],
@@ -30,10 +30,9 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className={`${display.variable} ${mono.variable}`}>
-      <body>
+      <body className="bg-ink text-paper antialiased">
         <WalletContextProvider>
-          <TopNav />
-          <main className="mx-auto max-w-3xl px-6 py-10">{children}</main>
+          {children}
         </WalletContextProvider>
       </body>
     </html>
