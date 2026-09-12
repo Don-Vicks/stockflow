@@ -114,39 +114,82 @@ async function main() {
         // 3. Execute Flow if condition met
         if (shouldExecute) {
             console.log(`Executing Flow: ${flowAccount.publicKey.toBase58()}...`);
-            
-            // To execute a flow, we need to derive PDAs and fetch associated token accounts.
-            // This is a simplified transaction call to demonstrate the process.
-            const owner = flowData.owner;
-            const vault = PublicKey.findProgramAddressSync(
-               [Buffer.from("vault"), owner.toBuffer()],
-               STOCKFLOW_PROGRAM_ID
-            )[0];
-            
-            const vaultAuthority = PublicKey.findProgramAddressSync(
-               [Buffer.from("vault_authority"), owner.toBuffer()],
-               STOCKFLOW_PROGRAM_ID
-            )[0];
-            
-            // Note: In reality, we must pass the correct token accounts depending on the action and source.
-            // Here we show the instruction builder structure.
-            /*
-            const tx = await program.methods.executeFlow()
-               .accounts({
-                   caller: keeperKeypair.publicKey,
-                   vault: vault,
-                   vaultAuthority: vaultAuthority,
-                   flow: flowAccount.publicKey,
-                   // protectionPolicy: protectionPolicyPda,
-                   // sourceTokenAccount: ...,
-                   // destinationTokenAccount: ...,
-                   // tokenProgram: TOKEN_PROGRAM_ID,
-               })
-               .rpc();
-               
-            console.log(`Flow executed. Tx: ${tx}`);
-            */
-            console.log(`Flow ${flowAccount.publicKey.toBase58()} would be executed here.`);
+
+            try {
+              const owner = flowData.owner as PublicKey;
+
+              // --- Derive PDAs ---
+              // Vault PDA — seeds: ["vault", owner]
+              const [vault] = PublicKey.findProgramAddressSync(
+                [Buffer.from("vault"), owner.toBuffer()],
+                STOCKFLOW_PROGRAM_ID
+              );
+
+              // Vault Authority PDA — seeds: ["vault_authority", owner]
+              const [vaultAuthority] = PublicKey.findProgramAddressSync(
+                [Buffer.from("vault_authority"), owner.toBuffer()],
+                STOCKFLOW_PROGRAM_ID
+              );
+
+              // Protection Policy PDA — seeds: ["protection_policy", owner]
+              const [protectionPolicy] = PublicKey.findProgramAddressSync(
+                [Buffer.from("protection_policy"), owner.toBuffer()],
+                STOCKFLOW_PROGRAM_ID
+              );
+
+              // --- Resolve token accounts from the flow's stored mints ---
+              // The flow stores the source and destination mints so the keeper
+              // can derive the vault's associated token accounts at runtime.
+              const TOKEN_PROGRAM_ID = new PublicKey(
+                "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+              );
+              const ASSOCIATED_TOKEN_PROGRAM_ID = new PublicKey(
+                "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJe1brs"
+              );
+
+              // Derive the vault's ATA for the source mint (collateral token).
+              const sourceMint = (flowData as any).sourceMint as PublicKey | undefined;
+              const destinationMint = (flowData as any).destinationMint as PublicKey | undefined;
+
+              if (!sourceMint || !destinationMint) {
+                console.warn(`Flow ${flowAccount.publicKey.toBase58()} is missing mint data — skipping.`);
+                continue;
+              }
+
+              const [sourceTokenAccount] = PublicKey.findProgramAddressSync(
+                [vault.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), sourceMint.toBuffer()],
+                ASSOCIATED_TOKEN_PROGRAM_ID
+              );
+
+              // Destination ATA — owned by the flow's destination pubkey
+              const destination = flowData.destination as PublicKey;
+              const [destinationTokenAccount] = PublicKey.findProgramAddressSync(
+                [destination.toBuffer(), TOKEN_PROGRAM_ID.toBuffer(), destinationMint.toBuffer()],
+                ASSOCIATED_TOKEN_PROGRAM_ID
+              );
+
+              // --- Submit the execute_flow transaction ---
+              const tx = await (program.methods as any).executeFlow()
+                .accounts({
+                  caller: keeperKeypair.publicKey,
+                  vault,
+                  vaultAuthority,
+                  flow: flowAccount.publicKey,
+                  protectionPolicy,
+                  sourceTokenAccount,
+                  destinationTokenAccount,
+                  tokenProgram: TOKEN_PROGRAM_ID,
+                })
+                .rpc();
+
+              console.log(`✅ Flow executed. Tx: ${tx}`);
+            } catch (execErr) {
+              // Log and continue — do not crash the keeper on a single failed execution.
+              console.error(
+                `❌ Failed to execute flow ${flowAccount.publicKey.toBase58()}:`,
+                execErr instanceof Error ? execErr.message : execErr
+              );
+            }
         }
       }
       
