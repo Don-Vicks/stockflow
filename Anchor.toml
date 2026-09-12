@@ -1,0 +1,23 @@
+[toolchain]
+anchor_version = "1.2.0"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.devnet]
+stockflow = "8BUAepdHuQKHXGav9VbNcenVzZPvUvfNqUzPHTE8cUXx"
+mock_klend = "ETsaieAaYRAhDYCw4Y55BwS37hvt8CE8oSBZMevRGe7d"
+
+[programs.localnet]
+stockflow = "8BUAepdHuQKHXGav9VbNcenVzZPvUvfNqUzPHTE8cUXx"
+mock_klend = "ETsaieAaYRAhDYCw4Y55BwS37hvt8CE8oSBZMevRGe7d"
+
+[provider]
+cluster = "devnet"
+wallet = "~/.config/solana/id.json"
+
+[scripts]
+test = "npx ts-mocha -p ./tsconfig.base.json -t 1000000 tests/**/*.ts"
+
+[hooks]

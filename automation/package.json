@@ -1,0 +1,24 @@
+{
+  "name": "@stockflow/automation",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Off-chain automation worker: detects Flow triggers and submits execute_flow transactions. Enforcement stays on-chain in the Anchor program.",
+  "main": "dist/index.js",
+  "scripts": {
+    "dev": "tsx watch src/index.ts",
+    "build": "tsc -p tsconfig.json",
+    "start": "node dist/index.js",
+    "test": "node --import tsx --test src/__tests__/*.test.ts"
+  },
+  "dependencies": {
+    "@stockflow/sdk": "*",
+    "@stockflow/common": "*",
+    "@solana/web3.js": "^1.99.0",
+    "dotenv": "^16.4.5"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "tsx": "^4.23.13",
+    "@types/node": "^22.20.2"
+  }
+}

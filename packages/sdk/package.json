@@ -1,0 +1,24 @@
+{
+  "name": "@stockflow/sdk",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Developer SDK for StockFlow — createFlow, simulateFlow, executeFlow, getPortfolio, getRisk, getLiquidity, pauseFlow",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "node --import tsx --test src/__tests__/*.test.ts"
+  },
+  "dependencies": {
+    "@stockflow/common": "*",
+    "@anchor-lang/core": "^1.2.0",
+    "@solana/web3.js": "^1.99.0",
+    "@solana/spl-token": "^0.4.15",
+    "@kamino-finance/klend-sdk": "^12.0.0"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.3",
+    "tsx": "^4.23.13",
+    "@types/node": "^22.20.2"
+  }
+}

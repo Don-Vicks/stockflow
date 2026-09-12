@@ -1,0 +1,11 @@
+node_modules/
+target/
+dist/
+.anchor/
+.next/
+test-ledger/
+*.log
+.env
+.env.local
+Cargo.lock
+.DS_Store
