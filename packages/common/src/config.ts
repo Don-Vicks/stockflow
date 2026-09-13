@@ -7,11 +7,8 @@ import { PublicKey } from "@solana/web3.js";
  */
 export const CONFIG = {
   devnet: {
-    // StockFlow's own program — placeholder is a validly-formed pubkey
-    // (not the deployed program's real address). Replace after
-    // `anchor build && anchor keys sync`, matching lib.rs's declare_id!
-    // and Anchor.toml exactly.
-    stockflowProgramId: new PublicKey("43M2Mbf1saQ9AHJAUsrH5R1fmFWXBYi4pyCLxicwvhYk"),
+    // StockFlow's own program — synced with the actual Devnet deployment.
+    stockflowProgramId: new PublicKey("8BUAepdHuQKHXGav9VbNcenVzZPvUvfNqUzPHTE8cUXx"),
 
     // UNVERIFIED — two conflicting candidates were found for Kamino's
     // devnet/staging klend program ID. Confirm against Kamino's docs
