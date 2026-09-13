@@ -1,12 +1,12 @@
 import { PublicKey } from "@solana/web3.js";
 
+import { BN } from "@coral-xyz/anchor";
+
 const FLOW_SEED = Buffer.from("flow");
 const PROTECTION_SEED = Buffer.from("protection");
 
 function u64LeBytes(value: bigint): Buffer {
-  const buf = Buffer.alloc(8);
-  buf.writeBigUInt64LE(value);
-  return buf;
+  return new BN(value.toString()).toArrayLike(Buffer, "le", 8);
 }
 
 export function deriveFlowPda(
