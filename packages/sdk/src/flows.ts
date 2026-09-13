@@ -1,4 +1,4 @@
-import { PublicKey, TransactionSignature, SystemProgram } from "@solana/web3.js";
+import { PublicKey, TransactionSignature, SystemProgram, Transaction } from "@solana/web3.js";
 import { FlowSpec, Trigger, Action, Source } from "@stockflow/common";
 import { StockFlowClient } from "./client";
 import { deriveFlowPda } from "./pda";
@@ -50,10 +50,31 @@ export async function createFlow(
     [Buffer.from("vault"), spec.owner.toBuffer()],
     client.programId
   );
+  const [vaultAuthority] = PublicKey.findProgramAddressSync(
+    [Buffer.from("vault_authority"), spec.owner.toBuffer()],
+    client.programId
+  );
+
+  const tx = new Transaction();
+
+  // If the vault doesn't exist, initialize it first in the same transaction
+  const vaultInfo = await client.connection.getAccountInfo(vault);
+  if (!vaultInfo) {
+    const initVaultIx = await client.program.methods
+      .initializeVault(spec.owner) // Use owner as the keeper for devnet logic by default
+      .accounts({
+        owner: spec.owner,
+        vault,
+        vaultAuthority,
+        systemProgram: SystemProgram.programId,
+      })
+      .instruction();
+    tx.add(initVaultIx);
+  }
 
   const nameArray = Array.from(Buffer.alloc(32));
-
-  const signature = await client.program.methods
+  
+  const createFlowIx = await client.program.methods
     .createFlow(
       new BN(spec.flowId.toString()),
       nameArray,
@@ -72,8 +93,11 @@ export async function createFlow(
       flow: flowAddress,
       systemProgram: SystemProgram.programId,
     })
-    .rpc();
+    .instruction();
+    
+  tx.add(createFlowIx);
 
+  const signature = await client.provider.sendAndConfirm(tx);
   return { signature, flowAddress };
 }
 
