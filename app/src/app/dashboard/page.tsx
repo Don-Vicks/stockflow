@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { getPortfolio } from "@stockflow/sdk";
+import { getPortfolio, getMintBySymbol } from "@stockflow/sdk";
 import type { PortfolioSummary } from "@stockflow/sdk";
 import { useStockFlow } from "@/hooks/useStockFlow";
 import { useWallet, useConnection } from "@solana/wallet-adapter-react";
@@ -265,11 +265,7 @@ export default function DashboardPage() {
                       </thead>
                       <tbody className="divide-y divide-line text-paper">
                         {portfolio.holdings.map(h => {
-                          const logo = h.symbol.includes("AAPL") ? "https://logo.clearbit.com/apple.com" 
-                            : h.symbol.includes("TSLA") ? "https://logo.clearbit.com/tesla.com"
-                            : h.symbol.includes("NVDA") ? "https://logo.clearbit.com/nvidia.com"
-                            : h.symbol.includes("MSFT") ? "https://logo.clearbit.com/microsoft.com"
-                            : "https://cryptologos.cc/logos/usd-coin-usdc-logo.png";
+                          const logo = getMintBySymbol(h.symbol)?.logoUrl || "https://cryptologos.cc/logos/usd-coin-usdc-logo.png";
                           
                           return (
                           <tr key={h.mint.toBase58()} className="hover:bg-ink/30 transition-colors">
