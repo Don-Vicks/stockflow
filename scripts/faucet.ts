@@ -27,7 +27,8 @@ import {
 } from "@solana/web3.js";
 import {
   createMint,
-  getOrCreateAssociatedTokenAccount,
+  getAssociatedTokenAddressSync,
+  createAssociatedTokenAccountIdempotent,
   mintTo,
   getMint,
 } from "@solana/spl-token";
@@ -198,15 +199,22 @@ async function main() {
       console.log(`   ↳ Created mint: ${mintPubkey.toBase58()}`);
     }
 
-    // ── 2. Get or create the recipient's ATA ───────────────────────────────
+    // ── 2. Derive ATA address deterministically, then create idempotently ─────
+    // getOrCreateAssociatedTokenAccount has a race condition — it creates the
+    // ATA then immediately fetches it before confirmation. Using the sync
+    // address helper + idempotent creation avoids this entirely.
     console.log(`   ↳ Resolving Associated Token Account…`);
-    const ata = await getOrCreateAssociatedTokenAccount(
+    const ataAddress = getAssociatedTokenAddressSync(mintPubkey, recipient);
+
+    // createAssociatedTokenAccountIdempotent sends the create instruction only
+    // if the ATA doesn't exist, and never throws if it already does.
+    await createAssociatedTokenAccountIdempotent(
       connection,
-      authority,      // fee payer for ATA creation
+      authority,    // fee payer
       mintPubkey,
       recipient
     );
-    console.log(`   ↳ ATA: ${ata.address.toBase58()}`);
+    console.log(`   ↳ ATA: ${ataAddress.toBase58()}`);
 
     // ── 3. Mint tokens to the recipient ────────────────────────────────────
     const rawAmount = stock.amount * Math.pow(10, TOKEN_DECIMALS);
@@ -215,7 +223,7 @@ async function main() {
       connection,
       authority,           // fee payer
       mintPubkey,
-      ata.address,         // destination ATA
+      ataAddress,          // destination ATA (confirmed address)
       authority.publicKey, // mint authority
       rawAmount
     );
