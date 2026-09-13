@@ -24,7 +24,6 @@ import {
   Keypair,
   PublicKey,
   LAMPORTS_PER_SOL,
-  SystemProgram,
 } from "@solana/web3.js";
 import {
   createMint,
@@ -34,7 +33,12 @@ import {
 } from "@solana/spl-token";
 import * as fs from "fs";
 import * as path from "path";
+import { fileURLToPath } from "url";
 import * as dotenv from "dotenv";
+
+// ESM-compatible __dirname
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 dotenv.config();
 
@@ -119,12 +123,22 @@ async function airdropIfNeeded(
 async function main() {
   console.log("🚰 StockFlow Devnet Faucet\n");
 
-  // Parse optional --wallet flag
+  // Accept:  npm run faucet -- <address>
+  //      or: npm run faucet -- --wallet <address>
   const args = process.argv.slice(2);
   const walletFlagIdx = args.indexOf("--wallet");
   let recipientKey: PublicKey | null = null;
+
   if (walletFlagIdx !== -1 && args[walletFlagIdx + 1]) {
+    // --wallet <address>
     recipientKey = new PublicKey(args[walletFlagIdx + 1]);
+  } else {
+    // bare positional arg — first non-flag argument
+    const bare = args.find((a) => !a.startsWith("--"));
+    if (bare) recipientKey = new PublicKey(bare);
+  }
+
+  if (recipientKey) {
     console.log(`🎯 Recipient wallet: ${recipientKey.toBase58()}`);
   }
 
