@@ -4,23 +4,51 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useStockFlow } from "@/hooks/useStockFlow";
 import { CONFIG } from "@stockflow/sdk";
+import { Zap, Hand, ChevronRight } from "lucide-react";
 
 import { TopNav } from "@/components/TopNav";
 import { Footer } from "@/components/Footer";
 
-// Flow::SIZE constant mirrors the Rust program's account size so we can
-// filter accounts by data length — discriminator(8) + owner(32) + flow_id(8)
-// + Trigger(17) + Action(9) + Source(33) + Constraints(10) + destination(32)
-// + status(1) + last_executed_at(8) + created_at(8) + bump(1) = 167.
-// Must be kept in sync with state/flow.rs Flow::SIZE.
-const FLOW_ACCOUNT_SIZE = 167;
-
 type FlowRow = {
   address: string;
-  /** Whether the account is active — stubbed to true until the IDL
-   *  deserialization lands in Phase 3 and we can read the status field. */
-  active: boolean;
+  trigger: any;
+  action: any;
+  status: any;
+  createdAt: number;
 };
+
+function formatRelativeTime(unixSeconds: number) {
+  const diffInSeconds = Math.floor(Date.now() / 1000) - unixSeconds;
+  if (diffInSeconds < 60) return "just now";
+  const diffInMinutes = Math.floor(diffInSeconds / 60);
+  if (diffInMinutes < 60) return `${diffInMinutes} minute${diffInMinutes === 1 ? '' : 's'} ago`;
+  const diffInHours = Math.floor(diffInMinutes / 60);
+  if (diffInHours < 24) return `${diffInHours} hour${diffInHours === 1 ? '' : 's'} ago`;
+  const diffInDays = Math.floor(diffInHours / 24);
+  return `${diffInDays} day${diffInDays === 1 ? '' : 's'} ago`;
+}
+
+function buildRuleSummary(trigger: any, action: any): string {
+  let triggerStr = "";
+  if (trigger.onDemand) {
+    triggerStr = "On Demand";
+  } else if (trigger.timeInterval) {
+    const secs = trigger.timeInterval.intervalSeconds.toNumber();
+    if (secs % 86400 === 0) triggerStr = `Every ${secs / 86400} days`;
+    else if (secs % 3600 === 0) triggerStr = `Every ${secs / 3600} hours`;
+    else triggerStr = `Every ${secs} seconds`;
+  } else if (trigger.riskThreshold) {
+    triggerStr = `If LTV > ${trigger.riskThreshold.ltvBps / 100}%`;
+  }
+
+  let actionStr = "";
+  if (action.pay) actionStr = `Pay ${action.pay.amount.toNumber() / 1e6} USDC`;
+  else if (action.borrow) actionStr = `Borrow ${action.borrow.amount.toNumber() / 1e6} USDC`;
+  else if (action.repay) actionStr = `Repay ${action.repay.amount.toNumber() / 1e6} USDC`;
+  else if (action.pauseSpending) actionStr = "Pause Spending";
+
+  return `${triggerStr} → ${actionStr}`;
+}
 
 export default function FlowsPage() {
   const { client, owner, isConnected } = useStockFlow();
@@ -36,24 +64,17 @@ export default function FlowsPage() {
     setLoading(true);
     setError(null);
 
-    client.connection
-      .getProgramAccounts(CONFIG.devnet.stockflowProgramId, {
-        filters: [
-          // Match accounts of exactly Flow::SIZE bytes.
-          { dataSize: FLOW_ACCOUNT_SIZE },
-          // Match the owner field at offset 8 (past the 8-byte discriminator).
-          // This is the most efficient on-chain filter available before the
-          // IDL's named type filters become usable post-anchor-build.
-          { memcmp: { offset: 8, bytes: owner.toBase58() } },
-        ],
-      })
-      .then((accounts) => {
+    (client.program.account as any).flow.all([
+      { memcmp: { offset: 8, bytes: owner.toBase58() } },
+    ])
+      .then((accounts: any[]) => {
         setFlows(
-          accounts.map(({ pubkey }) => ({
-            address: pubkey.toBase58(),
-            // Full status deserialization requires the IDL — defaulting to
-            // active and reading the real field once Phase 3 is complete.
-            active: true,
+          accounts.map(({ publicKey, account }: any) => ({
+            address: publicKey.toBase58(),
+            trigger: account.trigger,
+            action: account.action,
+            status: account.status,
+            createdAt: account.createdAt.toNumber(),
           }))
         );
       })
@@ -90,11 +111,17 @@ export default function FlowsPage() {
           )}
 
           {isConnected && !loading && !error && flows.length === 0 && (
-            <div className="rounded-md border border-dashed border-line bg-panel p-16 text-center space-y-3 mt-12">
-              <p className="font-mono text-sm text-muted">No Flows yet.</p>
+            <div className="rounded-md border border-dashed border-line bg-panel p-16 text-center space-y-4 mt-12 flex flex-col items-center justify-center">
+              <div className="h-12 w-12 rounded-full bg-panel border border-line flex items-center justify-center mb-2">
+                <Zap className="h-6 w-6 text-muted" />
+              </div>
+              <p className="font-mono text-lg text-paper">No Flows yet</p>
+              <p className="font-mono text-sm text-muted max-w-md mx-auto">
+                Automate your portfolio with powerful on-chain rules.
+              </p>
               <Link
                 href="/flows/new"
-                className="font-mono text-sm text-signal hover:underline inline-block"
+                className="mt-4 flex items-center gap-2 rounded-lg bg-paper text-ink px-6 py-3 font-mono text-sm font-semibold hover:bg-white transition-colors"
               >
                 Create your first Flow →
               </Link>
@@ -103,31 +130,53 @@ export default function FlowsPage() {
 
           {flows.length > 0 && (
             <div className="divide-y divide-line rounded-md border border-line bg-panel">
-              {flows.map((flow) => (
-                <Link
-                  key={flow.address}
-                  href={`/flows/${flow.address}`}
-                  className="flex items-center justify-between px-5 py-4 hover:bg-panel/80 transition-colors"
-                >
-                  <div>
-                    {/* Address displayed until IDL deserialization gives us a
-                        human-readable name / trigger description (Phase 3). */}
-                    <p className="font-mono text-sm text-paper">
-                      {flow.address.slice(0, 8)}…{flow.address.slice(-8)}
-                    </p>
-                    <p className="font-mono text-xs text-muted">
-                      {flow.address}
-                    </p>
-                  </div>
-                  <span
-                    className={`font-mono text-xs ${
-                      flow.active ? "text-signal" : "text-muted"
-                    }`}
+              {flows.map((flow) => {
+                const isAutomated = !flow.trigger.onDemand;
+                
+                let statusText = "ACTIVE";
+                let statusColor = "text-signal";
+                if (flow.status.paused) {
+                  statusText = "PAUSED";
+                  statusColor = "text-muted";
+                } else if (flow.status.executed) {
+                  statusText = "EXECUTED";
+                  statusColor = "text-paper";
+                }
+
+                return (
+                  <Link
+                    key={flow.address}
+                    href={`/flows/${flow.address}`}
+                    className="flex items-center justify-between px-5 py-4 hover:bg-panel/80 transition-colors group"
                   >
-                    ● {flow.active ? "ACTIVE" : "PAUSED"}
-                  </span>
-                </Link>
-              ))}
+                    <div className="flex items-center gap-4">
+                      <div className="h-10 w-10 rounded-full bg-[#1A1A1A] border border-line flex items-center justify-center">
+                        {isAutomated ? (
+                          <Zap className="h-4 w-4 text-paper" />
+                        ) : (
+                          <Hand className="h-4 w-4 text-paper" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-mono text-sm text-paper font-semibold">
+                          {buildRuleSummary(flow.trigger, flow.action)}
+                        </p>
+                        <p className="font-mono text-xs text-muted mt-1">
+                          Created {formatRelativeTime(flow.createdAt)}
+                        </p>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-4">
+                      <div className={`font-mono text-xs px-2.5 py-1 rounded-full border border-line/50 bg-[#1A1A1A] ${statusColor} flex items-center gap-1.5`}>
+                        <div className={`w-1.5 h-1.5 rounded-full ${statusColor === 'text-signal' ? 'bg-signal' : statusColor === 'text-paper' ? 'bg-paper' : 'bg-muted'}`} />
+                        {statusText}
+                      </div>
+                      <ChevronRight className="h-4 w-4 text-muted group-hover:text-paper transition-colors" />
+                    </div>
+                  </Link>
+                );
+              })}
             </div>
           )}
         </div>
