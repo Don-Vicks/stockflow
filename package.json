@@ -17,7 +17,9 @@
     "test": "npm run test -w packages/sdk && npm run test -w automation",
     "automation:dev": "npm run dev -w automation",
     "app:dev": "npm run dev -w app",
-    "dev": "concurrently \"npm:app:dev\" \"npm:automation:dev\""
+    "dev": "concurrently \"npm:app:dev\" \"npm:automation:dev\"",
+    "faucet": "ts-node scripts/faucet.ts",
+    "faucet:wallet": "ts-node scripts/faucet.ts --wallet"
   },
   "devDependencies": {
     "@anchor-lang/core": "^1.2.0",

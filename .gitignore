@@ -9,3 +9,4 @@ test-ledger/
 .env.local
 Cargo.lock
 .DS_Store
+scripts/devnet-mints.json
